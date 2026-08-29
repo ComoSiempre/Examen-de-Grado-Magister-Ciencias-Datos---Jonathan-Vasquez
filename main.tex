@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
@@ -78,9 +78,11 @@
 
 % Author
 \begin{flushleft}
+
 { \large
-    Autor:
-        Jonathan Davis Vásquez Rodriguez.\\[0.1cm]
+    \large Autor:
+    Jonathan Davis Vásquez Rodriguez.\\[0.1cm]
+    \large Correo: jon.vasquez@estudiante.uc.cl
 }
 \end{flushleft}
 
@@ -98,19 +100,69 @@
 \setlength{\cftbeforesubsecskip}{1pt}
 \tableofcontents
 \newpage
+%=====================================================================================================================
+\addcontentsline{toc}{section}{Resumen o Abstract del Proyecto}
+\section*{Resumen o Abstract del Proyecto}
+\label{sec:Resumen o Abstract del Proyecto}
 
-\section{Introducción}
-\label{sec:introduccion}
+La gestión de repuestos de inventario MRO (\textit{Maintenance, Repair and Operations}) en la industria minería constituye uno de los problemas logísticos de mayor impacto operacional y financiero en el sector. El cual enfrenta patrones de demanda altamente estocásticos e intermitentes, caracterizados por largos períodos sin consumo, interrumpidos por eventos de magnitud variable. En SCM Carola (faena Mina Carola), su maestro de materiales abarca 11.492 SKUs (~3.600 repuestos de maquinaria). La gestión actual, basada en clasificaciones ABC unidimensionales y parámetros de control fijos, presenta serias brechas: inmoviliza capital en sobrestock y genera riesgo de quiebres de stock en componentes críticos que detienen la flota operacional. 
+Para reemplazar esta lógica reactiva, nuestro proyecto está enfocado en el diseño e implementación de un modelo analítico de soporte a la decisión, estructurado en cuatro módulos secuenciales, validado sobre un piloto de 656 SKUs que representa el 75,8\% del consumo acumulado:
 
-La gestión de inventarios de repuestos en la industria minera constituye uno de los problemas logísticos de mayor impacto operacional y financiero del sector. A diferencia de los inventarios comerciales, los repuestos de mantenimiento, reparación y operaciones (\textit{Maintenance, Repair and Operations}, MRO) exhiben patrones de demanda altamente estocásticos, dominados por largos períodos de consumo nulo interrumpidos por eventos de magnitud variable e impredecible. Esta naturaleza intermitente hace que los modelos clásicos de gestión de inventarios, basados en supuestos de demanda continua y normal, resulten inadecuados para establecer políticas de reposición eficientes. El costo de esta inadecuación es asimétrico: el sobrestock inmoviliza capital en ítems que dejaron de rotar, mientras que el quiebre de stock en un componente crítico puede detener completamente una operación minera, con consecuencias financieras y de seguridad de magnitud muy superior.
+\begin{itemize}
+    \item \textbf{Módulo 1 — Segmentación Multidimensional del Portafolio:} Aplica reducción dimensional (PCA) y clustering K-Means (K=5, Silhouette Score = 0,668) sobre 6 variables logísticas (frecuencia, volatilidad, exclusividad operacional). Supera la clasificación ABC al agrupar los SKUs en 5 perfiles operacionales (desde "repuestos fantasma" hasta "críticos de alta rotación").
+    
+    \item \textbf{Módulo 2 — Pronóstico de Demanda Intermitente:} Al verificar que el 99,4\% del portafolio exhibe patrones \textit{Intermittent} o \textit{Lumpy} (clasificación Syntetos-Boylan), se evaluaron 6 modelos mediante la función de pérdida orientada a costos de inventario SPEC. El modelo TSB optimizado (Teunter-Syntetos-Babai optimizado) resultó ganador en el 56,9\% de los SKUs, reduciendo el SPEC entre un 13,8\% y 15,7\% respecto a la media histórica baseline. 
+    
+    \item \textbf{Módulo 3 — Optimización de Parámetros de Inventario:} Utiliza el marco de confiabilidad para piezas no reparables (Louit et al., 2011). El estudio identificó que la sobredispersión de la demanda MRO invalida el supuesto Poisson nominal (que alcanzó solo un 85,9\% de nivel de servicio). Por ello, se adoptó una calibración empírica que elevó el nivel de servicio medio al 95,8\% (para un plazo de entrega de 2 meses). 
+    
+    \item \textbf{Módulo 4 — Re-optimización Periódica:} Implementa un ciclo mensual de expanding window (12 iteraciones). Muestra alta estabilidad operacional (al ajustar el Punto de Reorden en un máximo de 4,3\% de los SKUs por ciclo) y convergencia sostenida en la cobertura del servicio (de 95,0\% a 95,8\%). 
+\end{itemize}
 
-El presente informe documenta el diseño e implementación de un modelo analítico de soporte a la decisión para la gestión de inventarios de repuestos de SCM Carola, empresa minera chilena que opera la Mina Carola en el Distrito Minero Punta del Cobre, Región de Atacama. SCM Carola administra un maestro de materiales de 11.492 SKUs (\textit{Stock Keeping Units}), de los cuales aproximadamente 3.600 corresponden a repuestos de maquinaria cuya demanda responde a la aleatoriedad de las fallas operacionales. La gestión actual se apoya en clasificaciones heurísticas estáticas (ABC) y parámetros de control fijos que rara vez se actualizan, generando simultáneamente sobrestock de capital inmovilizado y quiebres de stock en componentes críticos para la continuidad operacional. El proyecto propone reemplazar esta lógica reactiva por un sistema analítico estructurado en cuatro módulos secuenciales: (M1) segmentación multidimensional del portafolio mediante \textit{clustering} no supervisado \citep{jackson2022}, que delimita el universo del piloto y diferencia las políticas de inventario por segmento, (M2) pronóstico de demanda intermitente para los SKUs del piloto, con asignación de modelo según la clasificación Syntetos-Boylan \citep{syntetos2005} y evaluación mediante la métrica SPEC (\textit{Stock-keeping-oriented Prediction Error Costs}) \citep{kiefer2021}, (M3) cálculo dinámico del Punto de Reorden y Stock de Seguridad bajo un marco de confiabilidad \citep{louit2011}, y (M4) re-optimización periódica de parámetros que mantiene el sistema actualizado ante cambios en los patrones de consumo. El piloto de validación abarca 656 SKUs seleccionados a partir de los resultados del M1, priorizando el Cluster~3 en su totalidad y los SKUs de clasificación Pareto~A ---por concentración de consumo acumulado--- del Cluster~2, representando el 75,8\% del consumo acumulado 2020--2025 del portafolio de repuestos.
+El principal aporte metodológico del trabajo reside en integrar por primera vez en un pipeline serializable la segmentación no supervisada, el pronóstico esporádico guiado por costos (SPEC) y políticas de reposición basadas en confiabilidad. El sistema se ratifica como un modelo de soporte a la decisión, manteniendo la responsabilidad final en el equipo de abastecimiento. Como tareas prioritarias antes del despliegue en producción, se identifican la validación empírica del plazo de entrega ($T=2$ meses) con órdenes de compra reales, la evaluación de la distribución Binomial Negativa para corregir la sobredispersión y la realización de un piloto A/B operacional.
+\newpage
+%=====================================================================================================================
 
-La contribución del proyecto opera en dos dimensiones. En el plano operacional, el sistema reemplaza parámetros estáticos por políticas de inventario actualizables, reduciendo la exposición al quiebre de stock en los SKUs de mayor impacto financiero. En el plano metodológico, integra en un pipeline coherente tres marcos teóricos complementarios: la clasificación de \citet{syntetos2005} como mecanismo de asignación de modelos de pronóstico en producción, la métrica SPEC como función de pérdida orientada a costos de inventario, y el marco de confiabilidad de \citet{louit2011} como fundamento para el cálculo del Punto de Reorden diferenciado por cluster. Esta integración constituye 
-un aporte metodológico para el dominio de la gestión de inventarios MRO en minería.
+\section*{Pregunta 1}
+\label{sec:pregunta}
+\textit{\textbf{La segmentación del portafolio se construyó sobre un vector de seis atributos por SKU, cinco continuos y uno binario que marca si el repuesto es exclusivo de un equipo. Sobre ese vector se aplicó winsorización al percentil 99 y luego una estandarización a media cero y desviación unitaria, y finalmente una reducción a tres componentes principales que retienen el 89,1\% de la varianza, antes de agrupar con K-Means. El propio trabajo advierte que los atributos de patrón temporal son parcialmente redundantes por construcción, y esa redundancia forma parte del argumento para reducir dimensionalidad. La configuración final alcanza un Silhouette Score de 0,668.}}
 
-El informe se organiza en nueve secciones. La Sección~\ref{sec:problema} define el problema y los objetivos de investigación. La Sección~\ref{sec:arte} revisa el estado del arte relevante. La Sección~\ref{sec:tecnico} describe el desarrollo técnico completo del sistema, cubriendo el ciclo de vida del proyecto desde el análisis exploratorio de datos hasta la implementación de los cuatro módulos. La Sección~\ref{sec:resultados} presenta los resultados obtenidos con sus métricas de evaluación. La Sección~\ref{sec:discusion} discute las implicancias, limitaciones y factores de confusión. Las Secciones~\ref{sec:conclusiones}, \ref{sec:etica} y~\ref{sec:futuro} desarrollan las conclusiones, el análisis ético y el trabajo futuro, respectivamente.
+\begin{enumerate}
+    \item \textbf{\textit{Analice qué significado conserva la distancia euclidiana de un atributo binario tras estandarizarlo y proyectarlo junto a variables continuas en componentes principales.}}
+\\\
+En el pipeline de segmentación implementado, el tributo binario “Es\_Cautivo” — 1 si el repuesto es exclusivo de un equipo. 0 si es compartido — es sometido a un proceso de estandarización, al igual que el resto de los atributos del set de datos. En este caso, la estandarización del atributo binario altera su interpretación, es decir, la distancia pierde su significado lógico de separación excluyente (0 o 1) y pasa a depender de la varianza estadística del atributo en la muestra. El marco utilizado de \cite{jackson2022} en esta etapa, demuestra que el uso de PCA con K-means busca tanto la decorrelacion de las características compartidas de los datos y la reducción de ruido, como son las demandas intermitentes. En relación al atributo binario, al proyectarse, junto con el resto de atributos, en el espacio de componentes principales, la decorrelacion hace la fusión lineal con los atributos continuos del set de datos, manteniendo su variabilidad máxima. Esto se refleja en una “penalización” al momento de calcular las distancias euclidianas en K-means, el cual la variable binaria afecta en la clusterizacion, moviendo los centroides.
+\\\
+Esto lo podemos ver reflejado en los resultados obtenidos en el proyecto, a través del cuadro \ref{tab:pca_componentes1}. \\\
+En PC2 (que captura el 17,6\% de la varianza), la exclusividad tiene un loading positivo junto al volumen de consumo. Esto significa que la distancia euclidiana en el espacio PCA posiciona a los repuestos cautivos de alto consumo lejos de los consumibles universales
 
+%Tabla de resultados de PCA
+\begin{table}[H]
+\centering
+\caption{Componentes principales seleccionados (M1).}
+\label{tab:pca_componentes1}
+\begin{tabularx}{\textwidth}{c c c X}
+\hline
+\textbf{Componente} & \textbf{Varianza explicada} & \textbf{Acumulada} &
+\textbf{Variables dominantes} \\
+\hline
+PC1 & 60,9\% & 60,9\% & N\_Equipos (+), ADI (--), Pct\_Periodos\_Cero (--) \\
+PC2 & 17,6\% & 78,5\% & Consumo\_Total (+), Es\_Cautivo (+) \\
+PC3 & 10,6\% & 89,1\% & CV$^2$ y variables de variabilidad \\
+\hline
+\end{tabularx}
+\end{table}
+
+    \item \textbf{\textit{Evalúe si la redundancia entre los atributos de patrón temporal queda neutralizada por la reducción dimensional o si sigue pesando sobre la posición de los centroides.}}
+
+La reducción dimensional (PCA) no neutraliza la redundancia entre los atributos altamente correlacionados (como el ADI (\textit{Intervalo Promedio entre Demandas}), CV² (\textit{Coeficiente de Variacion de la demanda}) y Pct\_Periodos\_Cero (\textit{Proporsion meses sin demanda}), sino todo lo contrario, lo consolida. El proyecto argumenta que esta redundancia "es precisamente uno de los factores que justifica la reducción dimensional previa al agrupamiento". \cite{jackson2022} formaliza este enfoque al señalar que las características de los SKU pueden compartir información mutua y correlacionarse entre sí, por lo que, PCA es útil como herramienta de decorrelación y reducción de ruido.
+\\\
+La evidencia de esta respuesta se puede observar en los resultados obtenidos mostrados en el cuadro \ref{tab:pca_componentes1}. Se observa que PC1, el cual retiene el 60,9\% de la varianza total, está dominado por las variables de patrón temporal: N\_Equipos, ADI y Pct\_Periodos\_Cero. Esto indica que PCA ha capturado la estructura subyacente de la "frecuencia de demanda" en un único componente, eliminando la multicolinealidad que distorsionaría las distancias euclidianas. La redundancia queda efectivamente consolidada en el sentido de que los tres atributos contribuyen a la distancia a través de un único grado de libertad (PC1), en lugar de tres grados de libertad correlacionados que inflarían artificialmente la importancia de la dimensión temporal. En otras palabras, en lugar de diluir su impacto, el PCA concentra el peso de la redundancia temporal sobre el primer componente dimensional.
+
+    \item \textbf{\textit{¿Habría sido preferible un algoritmo de agrupamiento que admita atributos mixtos antes que forzar la codificación numérica de la exclusividad operacional?, justifique.}}
+    
+    \item \textbf{\textit{Proponga una comprobación que permita verificar que los cinco segmentos obtenidos son estables y no un artefacto del preprocesamiento escogido.}}
+\end{enumerate}
+\newpage
+%=====================================================================================================================
 \section{Definición del Problema y Objetivos de Investigación}
 \label{sec:problema}
 
