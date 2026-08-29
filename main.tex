@@ -111,11 +111,11 @@ La gestión de repuestos de inventario MRO (\textit{Maintenance, Repair and Oper
 Para reemplazar esta lógica reactiva, nuestro proyecto está enfocado en el diseño e implementación de un modelo analítico de soporte a la decisión, estructurado en cuatro módulos secuenciales, validado sobre un piloto de 656 SKUs que representa el 75,8\% del consumo acumulado:
 
 \begin{itemize}
-    \item \textbf{Módulo 1 — Segmentación Multidimensional del Portafolio:} Aplica reducción dimensional (PCA) y clustering K-Means (K=5, Silhouette Score = 0,668) sobre 6 variables logísticas (frecuencia, volatilidad, exclusividad operacional). Supera la clasificación ABC al agrupar los SKUs en 5 perfiles operacionales (desde "repuestos fantasma" hasta "críticos de alta rotación").
+    \item \textbf{Módulo 1 — Segmentación Multidimensional del Portafolio:} Aplica reducción dimensional (PCA) y clustering K-Means (K=5, Silhouette Score = 0,668) sobre 6 variables logísticas (considerando la frecuencia, volatilidad y exclusividad operacional). Supera la clasificación ABC al agrupar los SKUs en 5 perfiles operacionales (desde ``repuestos fantasma'' hasta ``repuestos críticos de alta rotación'').
     
     \item \textbf{Módulo 2 — Pronóstico de Demanda Intermitente:} Al verificar que el 99,4\% del portafolio exhibe patrones \textit{Intermittent} o \textit{Lumpy} (clasificación Syntetos-Boylan), se evaluaron 6 modelos mediante la función de pérdida orientada a costos de inventario SPEC. El modelo TSB optimizado (Teunter-Syntetos-Babai optimizado) resultó ganador en el 56,9\% de los SKUs, reduciendo el SPEC entre un 13,8\% y 15,7\% respecto a la media histórica baseline. 
     
-    \item \textbf{Módulo 3 — Optimización de Parámetros de Inventario:} Utiliza el marco de confiabilidad para piezas no reparables (Louit et al., 2011). El estudio identificó que la sobredispersión de la demanda MRO invalida el supuesto Poisson nominal (que alcanzó solo un 85,9\% de nivel de servicio). Por ello, se adoptó una calibración empírica que elevó el nivel de servicio medio al 95,8\% (para un plazo de entrega de 2 meses). 
+    \item \textbf{Módulo 3 — Optimización de Parámetros de Inventario:} Utiliza el marco de confiabilidad para piezas no reparables (\cite{louit2011}). El estudio identificó que la sobredispersión de la demanda MRO invalida el supuesto Poisson nominal (que alcanzó solo un 85,9\% de nivel de servicio). Por ello, se adoptó una calibración empírica que elevó el nivel de servicio medio al 95,8\% (para un plazo de entrega de 2 meses). 
     
     \item \textbf{Módulo 4 — Re-optimización Periódica:} Implementa un ciclo mensual de expanding window (12 iteraciones). Muestra alta estabilidad operacional (al ajustar el Punto de Reorden en un máximo de 4,3\% de los SKUs por ciclo) y convergencia sostenida en la cobertura del servicio (de 95,0\% a 95,8\%). 
 \end{itemize}
@@ -130,8 +130,8 @@ El principal aporte metodológico del trabajo reside en integrar por primera vez
 
 \begin{enumerate}
     \item \textbf{\textit{Analice qué significado conserva la distancia euclidiana de un atributo binario tras estandarizarlo y proyectarlo junto a variables continuas en componentes principales.}}
-\\[0.25cm]
-En el pipeline de segmentación implementado, el tributo binario ``Es\_Cautivo'' —1 si el repuesto es exclusivo de un equipo. 0 si es compartido— es sometido a un proceso de estandarización, al igual que el resto de los atributos del set de datos. En este caso, la estandarización del atributo binario altera su interpretación, es decir, la distancia pierde su significado lógico de separación excluyente (0 o 1) y pasa a depender de la varianza estadística del atributo en la muestra. El marco utilizado de \cite{jackson2022} en esta etapa, demuestra que el uso de PCA con K-means busca tanto la decorrelacion de las características compartidas de los datos y la reducción de ruido, como son las demandas intermitentes. En relación al atributo binario, al proyectarse, junto con el resto de atributos, en el espacio de componentes principales, la decorrelacion hace la fusión lineal con los atributos continuos del set de datos, manteniendo su variabilidad máxima. Esto se refleja en una “penalización” al momento de calcular las distancias euclidianas en K-means, el cual la variable binaria afecta en la clusterización, moviendo los centroides. Esto lo podemos ver reflejado en los resultados obtenidos en el proyecto, a través del cuadro \ref{tab:pca_componentes1}. 
+
+En el pipeline de segmentación implementado, el tributo binario ``Es\_Cautivo'' —1 si el repuesto es exclusivo de un equipo, 0 si es compartido— es sometido a un proceso de estandarización, al igual que el resto de los atributos del set de datos. En este caso, la estandarización del atributo binario altera su interpretación, es decir, la distancia pierde su significado lógico de separación excluyente (0 o 1) y pasa a depender de la varianza estadística del atributo en la muestra. El marco utilizado de \cite{jackson2022} en esta etapa, demuestra que el uso de PCA con K-means busca tanto la decorrelacion de las características compartidas de los datos y la reducción de ruido, como son las demandas intermitentes. En relación al atributo binario, al proyectarse, junto con el resto de atributos, en el espacio de componentes principales, la decorrelacion hace la fusión lineal con los atributos continuos del set de datos, manteniendo su variabilidad máxima. Esto se refleja en una “penalización” al momento de calcular las distancias euclidianas en K-means, el cual la variable binaria afecta en la clusterización, moviendo los centroides. Esto lo podemos ver reflejado en los resultados obtenidos en el proyecto, a través del cuadro \ref{tab:pca_componentes1}. 
 
 %Tabla de resultados de PCA
 \begin{table}[H]
@@ -165,7 +165,7 @@ No obstante, pese a las ventajas que ofrecen estas variaciones, el enfoque desar
 \\[0.25cm]
     \item \textbf{\textit{Proponga una comprobación que permita verificar que los cinco segmentos obtenidos son estables y no un artefacto del preprocesamiento escogido.}}
 
-Una comprobación posible, que podría aplicarse para demostrar la estabilidad de los 5 segmentos obtenidos de la clusterizacion, corresponde a la revisión por sub-muestreo o Bootstraping -considerada una práctica estándar de validación en clustering-. Esta propuesta consiste en repetir el pipeline de segmentación -winsorizacion al percentil 99 junto con el escalamiento de parámetros, proyección de los 3 componentes principales (PCA) y el uso de K-means para clusterizacion- sobre muestras pequeñas del portafolio. En cada instancia de muestreo, evaluar las métricas de comprobación, como el Silhouette Score y la distribución de asignación de clústeres.
+Una comprobación posible, que podría aplicarse para demostrar la estabilidad de los 5 segmentos obtenidos de la clusterizacion, corresponde a la revisión por sub-muestreo o Bootstraping ---considerada una práctica estándar de validación en clustering---. Esta propuesta consiste en repetir el pipeline de segmentación ---winsorizacion al percentil 99 junto con el escalamiento de parámetros, proyección de los 3 componentes principales (PCA) y el uso de K-means para clusterización--- sobre muestras pequeñas del portafolio. En cada instancia de muestreo, evaluar las métricas de comprobación, como el Silhouette Score y la distribución de asignación de clústeres.
 Complementando las métricas de comprobación, una alternativa es calcular el índice de Rand (ARI) ajustado entre cada partición, considerando que la metodología utilizada usa únicamente el silhouette score y el método de codo por cada iteración, no considerando una evaluación de sensibilidad a nivel de sub-muestreos. 
 Junto con las iteraciones, otra alternativa a complementar el proceso de validación, es aplicando variaciones en los parámetros de procesamiento, como distintos grados de winsorizacion o número de componentes principales, por sub-muestreo.
 Si los resultados de las iteraciones muestran variaciones menores en los parámetros de evaluación y persistencia en las agrupaciones, se confirmaría la estabilidad metodológica del proceso de segmentación, asegurando una clara agrupación de datos.
@@ -209,7 +209,7 @@ Considerando la criticidad como punto prioritario, comentado en la pregunta ante
 
     \item \textbf{\textit{Determine qué evidencia bastaría para cerrar formalmente la pregunta de si la clasificación vigente resulta suficiente en los segmentos de bajo impacto.}}
 
-Se requiere de un proceso de evaluación comparativo entre las dos clasificaciones, simulando los procesos y basándonos en la métrica base SPEC, propuesta por \cite{kiefer2021}, para ambos. Debido a la naturaleza de los datos, las métricas tradicionales de medición (como MAE o MAPE), presentan importantes sesgos y fallas en datos de series de tiempo con un alto nivel de valores nulos, de este problema surge la clasificación propuesta por \cite{syntetos2005} junto con la métrica propuesta de evaluación, aplicado en el proyecto. 
+Se requiere de un proceso de evaluación comparativo entre las dos clasificaciones, simulando los procesos y basándonos en la métrica base SPEC, propuesta por \cite{martin2020} y aplicada por \cite{kiefer2021}, para ambas. Debido a la naturaleza de los datos, las métricas tradicionales de medición (como MAE o MAPE), presentan importantes sesgos y fallas en datos de series de tiempo con un alto nivel de valores nulos, de este problema surge la clasificación propuesta por \cite{syntetos2005} junto con la métrica propuesta de evaluación, aplicado en el proyecto. 
 Sobre la simulación comparativa propuesta, se debe alimentar con datos asociados a los perfiles de repuestos fantasmas y cautivos (cluster 0) y de repuestos intermitentes multi-equipo (cluster 1), tanto en el proceso de clasificación ABC tradicional como en el sistema analítico desarrollado (Etapas M2-M3). Si la diferencia en la métrica SPEC agregada entre ambas políticas para dichos clústeres no es estadísticamente significativa, se consideraría evidencia suficiente para mantener la clasificación vigente. Viéndolo desde el punto de vista del modelamiento desarrollado, se contaría con evidencia formal demostrable de que los modelos predictivos complejos no aportan rentabilidad logística que justifique su administración en SKU de bajo impacto.
 \\[0.25cm]
 
@@ -218,11 +218,11 @@ Sobre la simulación comparativa propuesta, se debe alimentar con datos asociado
 El pipeline desarrollado, al ser ejecutado con datos tipo lumpy ---caracterizados por tener niveles de demanda muy erráticas con periodos largos sin consumo general, identificados en el proyecto desarrollado como Cluster 4--- se enfrentará a distintas dificultades, tanto en la etapa del módulo de pronostico (M2) como en la etapa de optimización de parámetros (M3).\\
 En la etapa de pronóstico, los modelos de \cite{croston1972} y la optimización de SBA de \cite{syntetos2005} no entregarán resultados esperados, debido a que no responde correctamente ante periodos largos sin actividad de demanda, esto puede verse reflejado en el proceso de optimización por \textit{expanding window}, el cual puede producir cortes con eventos sin demanda, lo que produciría que el SPEC se ajuste hacia el ruido producido por los datos. Aunque el modelo TSB, propuesto por \cite{teunter2011} abarca esta problemática, colapsando la probabilidad hacia cero ante periodos largos sin demandas detectadas.\\
 En la etapa de Optimización, la naturaleza lumpy choca directamente con el marco de confiabilidad de \cite{louit2011}, desarrollado en el proyecto, debido a la alta dispersión (Varianza del tamaño de la demanda supera a su media). Esto se traduce en una calibración sesgada, debido a la falta de eventos históricos en los datos.\\
-Para verificar estas dificultades, se realizó una prueba de ejecución del pipeline del proyecto, utilizando datos asociados al comportamiento lumpy, cuyos resultados se presentan en el cuadro X.
+Para verificar estas dificultades, se realizó una prueba de ejecución del pipeline del proyecto, utilizando datos asociados al comportamiento lumpy, cuyos resultados se presentan en el cuadro \ref{tab:resultadoscluster4}.
 
 \begin{table}[H]
 \centering
-\caption{Comparación M2-M3 entre Piloto original con Cluster 4 (lumpys puros). Aplicado sobre el dataset real de SCM Carola (2020-2025).}
+\caption{Comparación M2-M3 con los datos entre el Piloto original con Cluster 4 (lumpys puros). Aplicado sobre el dataset real de SCM Carola (2020-2025).}
 \label{tab:resultadoscluster4}
 \begin{tabularx}{\textwidth}{X c c}
 \hline
@@ -269,6 +269,12 @@ Una de las evidencias más significativas con esta prueba se dio en el porcentaj
     Teunter, R. H., Syntetos, A. A., \& Babai, M. Z. (2011).
     Intermittent demand: Linking forecasting to inventory obsolescence.
     \textit{European Journal of Operational Research}, 214(3), 606--616.
+
+    \bibitem[Martin et al.(2020)]{martin2020}
+    Martin, D., Spitzer, P., \& Kühl, N. (2020).
+    A new metric for lumpy and intermittent demand forecasts: Stock-keeping-oriented prediction error costs.
+    En \textit{Proceedings of the 53rd Hawaii International Conference on System Sciences}, pp. 974--983.
+
 
 \end{thebibliography}
 %=====================================================================================================================
