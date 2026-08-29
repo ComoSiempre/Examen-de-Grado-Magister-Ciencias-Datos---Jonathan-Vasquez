@@ -1,6 +1,8 @@
 \documentclass[10pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
 \usepackage[spanish]{babel}
 \usepackage{alphabeta}
 \usepackage{pdfpages}
@@ -31,7 +33,7 @@
 \renewcommand{\footrulewidth}{0.4pt}
 
 % Ajuste sutil para asegurar que entre en 2 planas si es necesario
-\linespread{1} 
+\linespread{1.25} %interlineado todo el doc
 \setlength{\parskip}{8pt plus2pt minus2pt}
 
 \widowpenalty 10000
@@ -81,7 +83,7 @@
 
 { \large
     \large Autor:
-    Jonathan Davis Vásquez Rodriguez.\\[0.1cm]
+    Jonathan Davis Vásquez Rodriguez.\\[0.5cm]
     \large Correo: jon.vasquez@estudiante.uc.cl
 }
 \end{flushleft}
@@ -128,9 +130,9 @@ El principal aporte metodológico del trabajo reside en integrar por primera vez
 
 \begin{enumerate}
     \item \textbf{\textit{Analice qué significado conserva la distancia euclidiana de un atributo binario tras estandarizarlo y proyectarlo junto a variables continuas en componentes principales.}}
-\\\
-En el pipeline de segmentación implementado, el tributo binario “Es\_Cautivo” — 1 si el repuesto es exclusivo de un equipo. 0 si es compartido — es sometido a un proceso de estandarización, al igual que el resto de los atributos del set de datos. En este caso, la estandarización del atributo binario altera su interpretación, es decir, la distancia pierde su significado lógico de separación excluyente (0 o 1) y pasa a depender de la varianza estadística del atributo en la muestra. El marco utilizado de \cite{jackson2022} en esta etapa, demuestra que el uso de PCA con K-means busca tanto la decorrelacion de las características compartidas de los datos y la reducción de ruido, como son las demandas intermitentes. En relación al atributo binario, al proyectarse, junto con el resto de atributos, en el espacio de componentes principales, la decorrelacion hace la fusión lineal con los atributos continuos del set de datos, manteniendo su variabilidad máxima. Esto se refleja en una “penalización” al momento de calcular las distancias euclidianas en K-means, el cual la variable binaria afecta en la clusterizacion, moviendo los centroides.
-\\\
+\\[0.25cm]
+En el pipeline de segmentación implementado, el tributo binario ``Es\_Cautivo'' — 1 si el repuesto es exclusivo de un equipo. 0 si es compartido — es sometido a un proceso de estandarización, al igual que el resto de los atributos del set de datos. En este caso, la estandarización del atributo binario altera su interpretación, es decir, la distancia pierde su significado lógico de separación excluyente (0 o 1) y pasa a depender de la varianza estadística del atributo en la muestra. El marco utilizado de \cite{jackson2022} en esta etapa, demuestra que el uso de PCA con K-means busca tanto la decorrelacion de las características compartidas de los datos y la reducción de ruido, como son las demandas intermitentes. En relación al atributo binario, al proyectarse, junto con el resto de atributos, en el espacio de componentes principales, la decorrelacion hace la fusión lineal con los atributos continuos del set de datos, manteniendo su variabilidad máxima. Esto se refleja en una “penalización” al momento de calcular las distancias euclidianas en K-means, el cual la variable binaria afecta en la clusterizacion, moviendo los centroides.
+\\
 Esto lo podemos ver reflejado en los resultados obtenidos en el proyecto, a través del cuadro \ref{tab:pca_componentes1}. \\\
 En PC2 (que captura el 17,6\% de la varianza), la exclusividad tiene un loading positivo junto al volumen de consumo. Esto significa que la distancia euclidiana en el espacio PCA posiciona a los repuestos cautivos de alto consumo lejos de los consumibles universales
 
@@ -152,10 +154,10 @@ PC3 & 10,6\% & 89,1\% & CV$^2$ y variables de variabilidad \\
 \end{table}
 
     \item \textbf{\textit{Evalúe si la redundancia entre los atributos de patrón temporal queda neutralizada por la reducción dimensional o si sigue pesando sobre la posición de los centroides.}}
-
-La reducción dimensional (PCA) no neutraliza la redundancia entre los atributos altamente correlacionados (como el ADI (\textit{Intervalo Promedio entre Demandas}), CV² (\textit{Coeficiente de Variacion de la demanda}) y Pct\_Periodos\_Cero (\textit{Proporsion meses sin demanda}), sino todo lo contrario, lo consolida. El proyecto argumenta que esta redundancia "es precisamente uno de los factores que justifica la reducción dimensional previa al agrupamiento". \cite{jackson2022} formaliza este enfoque al señalar que las características de los SKU pueden compartir información mutua y correlacionarse entre sí, por lo que, PCA es útil como herramienta de decorrelación y reducción de ruido.
-\\\
-La evidencia de esta respuesta se puede observar en los resultados obtenidos mostrados en el cuadro \ref{tab:pca_componentes1}. Se observa que PC1, el cual retiene el 60,9\% de la varianza total, está dominado por las variables de patrón temporal: N\_Equipos, ADI y Pct\_Periodos\_Cero. Esto indica que PCA ha capturado la estructura subyacente de la "frecuencia de demanda" en un único componente, eliminando la multicolinealidad que distorsionaría las distancias euclidianas. La redundancia queda efectivamente consolidada en el sentido de que los tres atributos contribuyen a la distancia a través de un único grado de libertad (PC1), en lugar de tres grados de libertad correlacionados que inflarían artificialmente la importancia de la dimensión temporal. En otras palabras, en lugar de diluir su impacto, el PCA concentra el peso de la redundancia temporal sobre el primer componente dimensional.
+\\[0.25cm]
+La reducción dimensional (PCA) no neutraliza la redundancia entre los atributos altamente correlacionados (como el ADI (\textit{Intervalo Promedio entre Demandas}), CV² (\textit{Coeficiente de Variacion de la demanda}) y Pct\_Periodos\_Cero (\textit{Proporsion meses sin demanda}), sino todo lo contrario, lo consolida. El proyecto argumenta que esta redundancia ``es precisamente uno de los factores que justifica la reducción dimensional previa al agrupamiento''. \cite{jackson2022} formaliza este enfoque al señalar que las características de los SKU pueden compartir información mutua y correlacionarse entre sí, por lo que, PCA es útil como herramienta de decorrelación y reducción de ruido.
+\\
+La evidencia de esta respuesta se puede observar en los resultados obtenidos mostrados en el cuadro \ref{tab:pca_componentes1}. Se observa que PC1, el cual retiene el 60,9\% de la varianza total, está dominado por las variables de patrón temporal: N\_Equipos, ADI y Pct\_Periodos\_Cero. Esto indica que PCA ha capturado la estructura subyacente de la ``frecuencia de demanda'' en un único componente, eliminando la multicolinealidad que distorsionaría las distancias euclidianas. La redundancia queda efectivamente consolidada en el sentido de que los tres atributos contribuyen a la distancia a través de un único grado de libertad (PC1), en lugar de tres grados de libertad correlacionados que inflarían artificialmente la importancia de la dimensión temporal. En otras palabras, en lugar de diluir su impacto, el PCA concentra el peso de la redundancia temporal sobre el primer componente dimensional.
 
     \item \textbf{\textit{¿Habría sido preferible un algoritmo de agrupamiento que admita atributos mixtos antes que forzar la codificación numérica de la exclusividad operacional?, justifique.}}
     
